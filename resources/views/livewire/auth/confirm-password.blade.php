@@ -13,7 +13,6 @@
             wire:model="password"
             :label="__('Password')"
             type="password"
-            required
             autocomplete="new-password"
             :placeholder="__('Password')"
         />

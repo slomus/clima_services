@@ -7,21 +7,18 @@
                 wire:model="current_password"
                 :label="__('Current password')"
                 type="password"
-                required
                 autocomplete="current-password"
             />
             <flux:input
                 wire:model="password"
                 :label="__('New password')"
                 type="password"
-                required
                 autocomplete="new-password"
             />
             <flux:input
                 wire:model="password_confirmation"
                 :label="__('Confirm Password')"
                 type="password"
-                required
                 autocomplete="new-password"
             />
 

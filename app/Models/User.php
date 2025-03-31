@@ -6,22 +6,32 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
-    /**
+       /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
+
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
+        'phone',
         'password',
+        'hash',
+        'address_city_id',
+        'address_street',
+        'address_home_number',
+        'address_apartment_number',
+        'address_post_code',
     ];
 
     /**
@@ -31,6 +41,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'hash',
         'remember_token',
     ];
 
@@ -46,7 +57,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-
+    
     /**
      * Get the user's initials
      */
@@ -57,4 +68,46 @@ class User extends Authenticatable
             ->map(fn (string $name) => Str::of($name)->substr(0, 1))
             ->implode('');
     }
+
+
+    public function citys()
+    {
+        return $this->belongsTo(City::class, 'address_city_id');
+    }
+
+    public function devices()
+    {
+        return $this->hasMany(Device::class);
+    }
+
+    public function services()
+    {
+        return $this->hasMany(Service::class, 'user_id');
+    }
+
+    public function servicesAsClient()
+    {
+        return $this->hasMany(Service::class, 'client_id');
+    }
+
+    public function messagesSent()
+    {
+        return $this->hasMany(Message::class, 'from');
+    }
+
+    public function messagesReceived()
+    {
+        return $this->hasMany(Message::class, 'to');
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function calendars()
+    {
+        return $this->hasMany(Calendar::class);
+    }
+
 }
