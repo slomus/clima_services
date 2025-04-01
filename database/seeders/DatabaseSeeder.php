@@ -52,6 +52,7 @@ class DatabaseSeeder extends Seeder
 
         $permissions = [
             'manage_users',
+            'manage_clients',
             'manage_roles',
 
             //devices
@@ -85,6 +86,7 @@ class DatabaseSeeder extends Seeder
     
         $technicalRole = Role::create(['name' => 'Technical']);
         $technicalRole->givePermissionTo([
+            'manage_clients',
             'view_all_devices',
             'view_assigned_devices',
             'manage_assigned_devices',
