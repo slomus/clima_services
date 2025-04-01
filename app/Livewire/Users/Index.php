@@ -16,7 +16,7 @@ class Index extends Component
     public string $sortField = 'id';
     public string $sortDirection = 'asc';
     public int $perPage = 25;
-    public array $roles = []; 
+    public array $roles = [];
     public array $headers = [];
 
     protected $queryString = [
@@ -31,12 +31,12 @@ class Index extends Component
     {
         $this->roles = Role::orderBy('id','asc')->pluck('name')->toArray();
         $this->headers = [
-            'id' => 'ID',
-            'first_name' => 'IMIĘ',
-            'last_name' => 'NAZWISKO',
-            'email' => 'E-MAIL',
-            'roles' => 'ROLA',
-            'actions' => 'AKCJE',
+            'id' => 'Id',
+            'first_name' => 'Imię',
+            'last_name' => 'Nazwisko',
+            'email' => 'E-mail',
+            'roles' => 'Rola',
+            'actions' => 'Akcje',
         ];
     }
 
