@@ -7,12 +7,12 @@
     <form wire:submit="register" class="flex flex-col gap-6">
         <!-- Name -->
         <flux:input
-            wire:model="name"
-            :label="__('Name')"
+            wire:model="first_name"
+            :label="__('Imię')"
             type="text"
             autofocus
-            autocomplete="name"
-            :placeholder="__('Full name')"
+            autocomplete="firstName"
+            :placeholder="__('Imię')"
         />
 
         <!-- Email Address -->

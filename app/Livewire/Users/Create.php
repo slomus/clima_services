@@ -8,6 +8,7 @@ use Livewire\Component;
 use Spatie\Permission\Models\Role;
 use App\Models\User;
 use Masmerise\Toaster\Toaster;
+use Illuminate\Support\Str;
 
 class Create extends Component
 {
@@ -33,6 +34,8 @@ class Create extends Component
             'email.unique' => 'Podany adres e-mail jest już wykorzystywany',
             'role.required' => 'Należy wskazac role użytkowika',
         ]);
+
+        $this->hash = Str::random();
     
         $this->link = route('register', ['hash' => $this->hash ]);
 

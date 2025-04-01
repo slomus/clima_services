@@ -24,7 +24,7 @@ test('profile information can be updated', function () {
 
     $user->refresh();
 
-    expect($user->first_name)->toEqual('Test User');
+    expect($user->first_name)->toEqual('Test');
     expect($user->email)->toEqual('test@example.com');
     expect($user->email_verified_at)->toBeNull();
 });
