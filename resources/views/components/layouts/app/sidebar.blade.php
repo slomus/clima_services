@@ -14,7 +14,7 @@
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Platform')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Strona główna') }}</flux:navlist.item>
-                    <flux:navlist.item icon="users" :href="route('users.create')" :current="request()->routeIs('users.create')" wire:navigate>{{ __('Użytkownicy') }}</flux:navlist.item>
+                    <flux:navlist.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.index')" wire:navigate>{{ __('Użytkownicy') }}</flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
 
@@ -41,7 +41,7 @@
                                 </span>
 
                                 <div class="grid flex-1 text-left text-sm leading-tight">
-                                    <span class="truncate font-semibold">{{ auth()->user()->name }}</span>
+                                    <span class="truncate font-semibold">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</span>
                                     <span class="truncate text-xs">{{ auth()->user()->email }}</span>
                                 </div>
                             </div>
@@ -51,7 +51,7 @@
                     <flux:menu.separator />
 
                     <flux:menu.radio.group>
-                        <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
+                        <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Ustawienia') }}</flux:menu.item>
                     </flux:menu.radio.group>
 
                     <flux:menu.separator />
@@ -59,7 +59,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
                         <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                            {{ __('Log Out') }}
+                            {{ __('Wyloguj się') }}
                         </flux:menu.item>
                     </form>
                 </flux:menu>
@@ -119,5 +119,6 @@
         {{ $slot }}
 
         @fluxScripts
+        <x-toaster-hub />
     </body>
 </html>

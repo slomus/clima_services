@@ -4,6 +4,7 @@ use App\Livewire\Settings\Appearance as SettingsAppearance;
 use App\Livewire\Settings\Password as SettingsPassword;
 use App\Livewire\Settings\Profile as SettingsProfile;
 use App\Livewire\Users\Create as UsersCreate;
+use App\Livewire\Users\Index as UserIndex;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -22,9 +23,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('settings/appearance', SettingsAppearance::class)->name('settings.appearance');
 
 
-    Route::redirect('users', 'users/create');
+    Route::redirect('users', 'users/index');
 
+    Route::get('/users/index', UserIndex::class)->name('users.index');
     Route::get('/users/create', UsersCreate::class)->name('users.create');
+    
+
 });
 
 require __DIR__.'/auth.php';

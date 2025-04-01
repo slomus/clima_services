@@ -2,9 +2,12 @@
 
 namespace App\Livewire\Users;
 
+use App\Mail\InvitationEmail;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
 use App\Models\User;
+use Masmerise\Toaster\Toaster;
 
 class Create extends Component
 {
@@ -40,10 +43,11 @@ class Create extends Component
 
         $createdUser->assignRole($this->role);
 
+        Mail::to($createdUser->email)->send(new InvitationEmail($this->link));
+
+        Toaster::success('Użytkownik został zapisy!');
+
         $this->reset('email', 'role');
+
     }
-    // public function render()
-    // {
-    //     return view('livewire.users.create');
-    // }
 }

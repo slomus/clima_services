@@ -50,111 +50,54 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        $adminRole = Role::firstOrCreate(['name' => 'Admin']);
-        $technicianRole = Role::firstOrCreate(['name' => 'Technician']);
-        $clientRole = Role::firstOrCreate(['name' => 'Client']);
+        $permissions = [
+            'manage_users',
+            'manage_roles',
 
-        //Zezwolenia do farktur (nie chcialo mi sie rozdzielac na admin/prac/klient)
-        $pInvoiceCreate = Permission::firstOrCreate(['name' => 'invoice_create_access']);
-        $pInvoiceList= Permission::firstOrCreate(['name' => 'invoice_list_access']);
-        $pInvoiceView= Permission::firstOrCreate(['name' => 'invoice_view_access']);
-        $pInvoiceEdit= Permission::firstOrCreate(['name' => 'invoice_edit_access']);
-        $pInvoiceDelete= Permission::firstOrCreate(['name' => 'invoice_delete_access']);
+            //devices
+            'view_all_devices',
+            'manage_devices',
+            'view_assigned_devices',
+            'manage_assigned_devices',
+            'view_own_devices',
 
-        // Zezwolenia admina
-        $pManageRole = Permission::firstOrCreate(['name' => 'manage_role_access']);
-        $pManagePermission = Permission::firstOrCreate(['name' => 'manage_permission_access']);
-        $pManageUsers = Permission::firstOrCreate(['name' => 'manage_user_access']);
+            //tickets
+            'view_all_tickets',
+            'manage_tickets',
+            'view_assigned_tickets',
+            'manage_assigned_tickets',
+            'create_tickets',
+            'view_own_tickets',
 
-        // Zezwolenia pracownika
-        $pClientList = Permission::firstOrCreate(['name' => 'client_list_access']);
-        $pDeviceList = Permission::firstOrCreate(['name' => 'device_list_access']);
-        $pDeviceCreate = Permission::firstOrCreate(['name' => 'device_create_access']);
-        $pServiceManaging = Permission::firstOrCreate(['name' => 'service_manage_access']);
-        $pCalendarManaging = Permission::firstOrCreate(['name' => 'calendar_manage_access']);
-        $pManageClients = Permission::firstOrCreate(['name' => 'manage_client_access']);
-        $pManagePendingServices = Permission::firstOrCreate(['name' => 'manage_pending_service']);
-
-        // Zezwolenia klienta
-        $pData = Permission::firstOrCreate(['name' => 'own_data_access']);
-        $pDeviceListOwn = Permission::firstOrCreate(['name' => 'own_device_list_access']);
-        $pServiceHistory = Permission::firstOrCreate(['name' => 'own_service_history_access']);
-
-
-        $adminRole->syncPermissions([
-            $pManageRole,
-            $pManagePermission,
-            $pManageUsers,
-            $pClientList,
-            $pDeviceList,
-            $pServiceManaging,
-            $pCalendarManaging,
-            $pData,
-            $pDeviceListOwn,
-            $pServiceHistory,
-            $pDeviceCreate,
-            $pManagePendingServices,
-            $pInvoiceCreate,
-            $pInvoiceList,
-            $pInvoiceView,
-            $pInvoiceEdit,
-            $pInvoiceDelete
+            //invoices
+            'view_all_invoices',
+            'manage_invoices',
+            'view_onw_invoices'
+        ];
+    
+        foreach ($permissions as $permission) {
+            Permission::create(['name' => $permission]);
+        }
+    
+        // Tworzenie ról i przypisywanie uprawnień
+        $adminRole = Role::create(['name' => 'Admin']);
+        $adminRole->givePermissionTo($permissions); // Admin ma wszystkie uprawnienia
+    
+        $technicalRole = Role::create(['name' => 'Technical']);
+        $technicalRole->givePermissionTo([
+            'view_all_devices',
+            'view_assigned_devices',
+            'manage_assigned_devices',
+            'view_assigned_tickets',
+            'manage_assigned_tickets'
         ]);
-
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'first_name' => 'Ad',
-                'last_name' => 'Min',
-                'password' => Hash::make('admin123'),
-                'address_city_id' => 1,
-            ]
-        );
-
-        $admin->syncRoles($adminRole);
-
-        $technicianRole->syncPermissions([
-            $pClientList,
-            $pDeviceList,
-            $pServiceManaging,
-            $pCalendarManaging,
-            $pManageClients,
-            $pData,
-            $pDeviceCreate,
-            $pManagePendingServices,
-            $pInvoiceCreate,
-            $pInvoiceList,
-            $pInvoiceView
+    
+        $clientRole = Role::create(['name' => 'Client']);
+        $clientRole->givePermissionTo([
+            'view_own_devices',
+            'create_tickets',
+            'view_own_tickets',
+            'view_onw_invoices'
         ]);
-
-        $technicc = User::firstOrCreate(
-            ['email' => 'technic@example.com'],
-            [
-                'first_name' => 'Tech',
-                'last_name' => 'Nic',
-                'password' => Hash::make('technic123'),
-                'address_city_id' => 1,
-            ]
-        );
-
-        $technicc->syncRoles($technicianRole);
-
-        $clientRole->syncPermissions([
-            $pData,
-            $pDeviceListOwn,
-            $pServiceHistory,
-            $pInvoiceView
-        ]);
-
-        $client = User::firstOrCreate(
-            ['email' => 'client@example.com'],
-            [
-            'first_name' => 'Cli',
-            'last_name' => 'Ent',
-            'password' => Hash::make('client123'),
-            'address_city_id' => 1,
-            ]
-        );
-        $client->syncRoles($clientRole);
     }
 }

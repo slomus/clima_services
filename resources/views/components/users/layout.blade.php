@@ -1,6 +1,7 @@
 <div class="flex items-start max-md:flex-col">
     <div class="mr-10 w-full pb-4 md:w-[220px]">
         <flux:navlist>
+            <flux:navlist.item :href="route('users.index')" wire:navigate>{{ __('Lista') }}</flux:navlist.item>
             <flux:navlist.item :href="route('users.create')" wire:navigate>{{ __('Dodaj') }}</flux:navlist.item>
         </flux:navlist>
     </div>
@@ -11,7 +12,7 @@
         <flux:heading>{{ $heading ?? '' }}</flux:heading>
         <flux:subheading>{{ $subheading ?? '' }}</flux:subheading>
 
-        <div class="mt-5 w-full max-w-lg">
+        <div class="mt-5 w-full">
             {{ $slot }}
         </div>
     </div>
