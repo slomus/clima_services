@@ -85,7 +85,7 @@ class Edit extends Component
             'address_post_code.regex' => 'Kod pocztowy musi być w formacie XX-XXX',
         ]);
 
-        
+
 
         $this->user->fill($validated);
 
