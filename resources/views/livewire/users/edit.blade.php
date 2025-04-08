@@ -1,31 +1,11 @@
 <section class="w-full">
-    @include('partials.settings-heading')
+    @include('partials.users-heading')
 
-    <x-settings.layout :heading="__('Konto')" :subheading="__('Zaktualizuj dane konta')">
-        <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
+    <x-users.layout :heading="__('Konto użytkownika')" :subheading="__('Zaktualizuj dane konta użytkownika')">
+        <form wire:submit="updateUserInformtion" class="my-6 w-full space-y-6">
             <flux:input wire:model="first_name" :label="__('Imię')" type="text" autofocus autocomplete="firstName" />
             <flux:input wire:model="last_name" :label="__('Nazwisko')" type="text" autocomplete="lastName" />
-            <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" autocomplete="email" />
-
-                @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail &&! auth()->user()->hasVerifiedEmail())
-                    <div>
-                        <flux:text class="mt-4">
-                            {{ __('Your email address is unverified.') }}
-
-                            <flux:link class="text-sm cursor-pointer" wire:click.prevent="resendVerificationNotification">
-                                {{ __('Click here to re-send the verification email.') }}
-                            </flux:link>
-                        </flux:text>
-
-                        @if (session('status') === 'verification-link-sent')
-                            <flux:text class="mt-2 font-medium !dark:text-green-400 !text-green-600">
-                                {{ __('A new verification link has been sent to your email address.') }}
-                            </flux:text>
-                        @endif
-                    </div>
-                @endif
-            </div>
+            <flux:input wire:model="email" :label="__('Email')" type="email" autocomplete="email" />
             <flux:input wire:model="phone" :label="__('Nr.telefonu')" type="text" autocapitalize="phoneNumber" />
             <flux:select wire:model="address_city_id" :label="__('Miasto')" :filter="false" id="address_city_id" name="address_city_id">
             <flux:select.option value="Wybierz">{{ __('Wybierz') }}</flux:select.option>
@@ -46,14 +26,15 @@
                 <div class="flex items-center justify-end">
                     <flux:button variant="primary" type="submit" class="w-full">{{ __('Zapisz') }}</flux:button>
                 </div>
+                <flux:link wire:wire:navigate href="{{ route('users.index') }}">
+                    <flux:button variant="filled" class="w-full">{{ __('Anuluj') }}</flux:button>
+                </flux:link>
             </div>
 
-            <x-action-message class="me-3" on="profile-updated">
-                {{ __('Zapisano.') }}
+            <x-action-message class="me-3" on="user-updated">
+                {{ __('Zaktualizowano.') }}
             </x-action-message>
 
         </form>
-
-        <livewire:settings.delete-user-form />
-    </x-settings.layout>
+    </x-users.layout>
 </section>

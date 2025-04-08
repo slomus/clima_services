@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 class Create extends Component
 {
     public string $email = '';
-    public Role $role;
+    public string $role = '';
     public string $hash = '';
     public string $link = '';
     public array $roles = [];
@@ -44,13 +44,14 @@ class Create extends Component
             'hash' => $this->hash
         ]);
 
-        $createdUser->assignRole($this->role);
+        $role = Role::where('name', $this->role)->first();
+
+        $createdUser->assignRole($role);
 
         Mail::to($createdUser->email)->send(new InvitationEmail($this->link));
 
-        Toaster::success('Użytkownik został zapisy!');
+        Toaster::success('Użytkownik został zapisany!');
 
         $this->reset('email', 'role');
-
     }
 }

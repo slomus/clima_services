@@ -50,56 +50,131 @@ class DatabaseSeeder extends Seeder
             );
         }
 
+        // Tworzenie uprawnień
         $permissions = [
-            'manage_users',
-            'manage_clients',
-            'manage_roles',
+            // Użytkownicy
+            'users.view',
+            'users.create',
+            'users.edit',
+            'users.delete',
 
-            //devices
-            'view_all_devices',
-            'manage_devices',
-            'view_assigned_devices',
-            'manage_assigned_devices',
-            'view_own_devices',
+            // Klienci
+            'clients.view',
+            'clients.create',
+            'clients.edit',
+            'clients.delete',
 
-            //tickets
-            'view_all_tickets',
-            'manage_tickets',
-            'view_assigned_tickets',
-            'manage_assigned_tickets',
-            'create_tickets',
-            'view_own_tickets',
+            // Role
+            'roles.view',
+            'roles.create',
+            'roles.edit',
+            'roles.delete',
 
-            //invoices
-            'view_all_invoices',
-            'manage_invoices',
-            'view_onw_invoices'
+            //Uprawnienia
+            'permissions.view',
+            'permissions.create',
+            'permissions.edit',
+            'permissions.delete',
+
+            // Urządzenia
+            'devices.create',
+            'devices.view_all',
+            'devices.view_own',
+            'devices.manage_assigned.view',
+            'devices.manage_assigned.edit',
+
+            // Zgłoszenia
+            'tickets.view_all',
+            'tickets.view_assigned',
+            'tickets.view_own',
+            'tickets.create',
+            'tickets.manage_assigned.view',
+            'tickets.manage_assigned.edit',
+
+            // Faktury
+            'invoices.view_all',
+            'invoices.view_own',
+            'invoices.view_own.download',
         ];
-    
+
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
-    
-        // Tworzenie ról i przypisywanie uprawnień
-        $adminRole = Role::create(['name' => 'Admin']);
-        $adminRole->givePermissionTo($permissions); // Admin ma wszystkie uprawnienia
-    
-        $technicalRole = Role::create(['name' => 'Technical']);
-        $technicalRole->givePermissionTo([
-            'manage_clients',
-            'view_all_devices',
-            'view_assigned_devices',
-            'manage_assigned_devices',
-            'view_assigned_tickets',
-            'manage_assigned_tickets'
-        ]);
-    
-        $clientRole = Role::create(['name' => 'Client']);
-        $clientRole->givePermissionTo([
-            'view_own_devices',
-            'create_tickets',
-            'view_own_tickets',
-            'view_onw_invoices'
-        ]);
+
+        // Rola Administratora
+        $adminRole = Role::firstOrCreate(['name' => 'Admin']);
+        $adminRole->givePermissionTo($permissions);
+
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'first_name' => 'Ad',
+                'last_name' => 'Min',
+                'password' => Hash::make('admin123'),
+                'address_city_id' => 1,
+            ]
+        );
+        $admin->syncRoles($adminRole);
+
+        // Rola Techniczna
+        $technicalRole = Role::firstOrCreate(['name' => 'Technical']);
+        $technicalPermissions = [
+            'clients.view',
+            'clients.create',
+            'clients.edit',
+
+            // Urządzenia (zarządzanie przypisanymi)
+            'devices.create',
+            'devices.view_all',
+            'devices.manage_assigned.view',
+            'devices.manage_assigned.edit',
+
+            // Zgłoszenia (zarządzanie przypisanymi)
+            'tickets.view_assigned',
+            'tickets.create',
+            'tickets.manage_assigned.view',
+            'tickets.manage_assigned.edit',
+
+        ];
+        $technicalRole->givePermissionTo($technicalPermissions);
+
+        $technician = User::firstOrCreate(
+            ['email' => 'technic@example.com'],
+            [
+                'first_name' => 'Tech',
+                'last_name' => 'Nic',
+                'password' => Hash::make('technic123'),
+                'address_city_id' => 1,
+            ]
+        );
+        $technician->syncRoles($technicalRole);
+
+        // Rola Klienta
+        $clientRole = Role::firstOrCreate(['name' => 'Client']);
+        $clientPermissions = [
+            // Urządzenia (tylko własne)
+            'devices.view_own',
+            'devices.create',
+
+            // Zgłoszenia (tworzenie i przeglądanie własnych)
+            'tickets.create',
+            'tickets.view_own',
+
+            // Faktury (tylko własne)
+            'invoices.view_own',
+            'invoices.view_own.download',
+        ];
+        $clientRole->givePermissionTo($clientPermissions);
+
+        $client = User::firstOrCreate(
+            ['email' => 'client@example.com'],
+            [
+                'first_name' => 'Cli',
+                'last_name' => 'Ent',
+                'password' => Hash::make('client123'),
+                'address_city_id' => 1,
+            ]
+        );
+        $client->syncRoles($clientRole);
     }
 }

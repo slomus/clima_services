@@ -1,19 +1,16 @@
 <?php
 
-namespace App\Livewire\Settings;
+namespace App\Livewire\Users;
 
+use Livewire\Component;
 use App\Models\User;
 use App\Models\City;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 use Masmerise\Toaster\Toaster;
-use Livewire\Component;
 
-class Profile extends Component
+class Edit extends Component
 {
-
-    protected User $user;
+    public ?User $user;
     public string $first_name = '';
     public string $last_name = '';
     public string $email = '';
@@ -24,20 +21,16 @@ class Profile extends Component
     public string $address_apartment_number = '';
     public string $address_post_code = '';
     public array $cities = [];
-
-    public function __construct()
-    {
-        $this->user = Auth::user();
-    }
-
     /**
      * Mount the component.
      */
-    public function mount(): void
+    public function mount($userId): void
     {
+        $this->user = User::findOrFail($userId);
         $this->first_name = $this->user->first_name ?? '';
         $this->last_name = $this->user->last_name ?? '';
         $this->email = $this->user->email ?? '';
+        $this->phone = $this->user->phone ?? '';
         $this->address_city_id = $this->user->address_city_id ?? 0;
         $this->address_street = $this->user->address_street ?? '';
         $this->address_home_number = $this->user->address_home_number ?? '';
@@ -49,14 +42,13 @@ class Profile extends Component
     /**
      * Update the profile information for the currently authenticated user.
      */
-    public function updateProfileInformation(): void
+    public function updateUserInformtion(): void
     {
-
         $validated = $this->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->user->id)],
-            'phone' => ['nullable', 'string', 'regex:/^$|^\+48(?:\d{9}|\s\d{3}\s\d{3}\s\d{3})$/', Rule::unique(User::class)->ignore($this->user->id)],
+            'phone' => ['nullable', 'string', 'regex:/^$|^\+48(?:\d{9}|\s\d{3}\s\d{3}\s\d{3})$/', Rule::unique(User::class)->ignore($this->user?->id)],
             'address_city_id' => ['required', 'integer'],
             'address_street' => ['required', 'string', 'max:255'],
             'address_home_number' => ['required', 'string', 'max:255'],
@@ -106,23 +98,6 @@ class Profile extends Component
         Toaster::success('Dane zostały zaktualizowane');
 
 
-        $this->dispatch('profile-updated', fist_name: $this->user->first_name);
-    }
-
-    /**
-     * Send an email verification notification to the current user.
-     */
-    public function resendVerificationNotification(): void
-    {
-
-        if ($this->user->hasVerifiedEmail()) {
-            $this->redirectIntended(default: route('dashboard', absolute: false));
-
-            return;
-        }
-
-        $this->user->sendEmailVerificationNotification();
-
-        Session::flash('status', 'verification-link-sent');
+        $this->dispatch('user-updated', fist_name: $this->user->first_name);
     }
 }
