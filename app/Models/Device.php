@@ -24,14 +24,9 @@ class Device extends Model
         'warranty_end_date' => 'date',
     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'client_id');
-    }
-
     public function client()
     {
-        return $this->user();
+        return $this->belongsTo(User::class, 'client_id');
     }
 
     public function services()

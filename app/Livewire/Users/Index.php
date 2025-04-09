@@ -7,8 +7,6 @@ use Livewire\WithPagination;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Masmerise\Toaster\Toaster;
-use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Hash;
 
 class Index extends Component
 {

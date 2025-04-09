@@ -5,76 +5,58 @@ namespace App\Livewire\Devices;
 use Livewire\Component;
 use App\Models\Device;
 use App\Models\User;
+use Masmerise\Toaster\Toaster;
 
 class Index extends Component
 {
-    public $search = '';
-    public $sortField = 'created_at';
-    public $sortDirection = 'desc';
-    public $user_id = null;
-    public $clients = [];
-    public $searchClient = '';
-    public $isEditing = false;
-    public $showQrScanner = false;
+    public string $search = '';
+    public ?int $userFilter  = null;
+    public string $sortField = 'id';
+    public string $sortDirection = 'desc';
+    public int $perPage = 25;
+    public array $headers = [];
+    public array $clients = [];
+    public ?int $deviceId = null;
+    public string $password = '';
 
-    public $showDeleteModal = false;
-    public $deviceToDelete = null;
-
-    public $devices = null;
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'userFilter' => ['except' => null],
+        'sortField' => ['except' => 'id'],
+        'sortDirection' => ['except' => 'desc'],
+        'perPage' => ['except' => 25],
+    ];
 
     public function mount()
     {
-        if (auth()->check() && auth()->user()->hasRole('Client')) {
-            $this->user_id = auth()->id();
-        } elseif (auth()->check() && auth()->user()->hasRole(['Admin', 'employee'])) {
-            $this->loadClients();
-        }
+        $this->loadClients();
+        $this->headers = [
+            'id' => 'Id',
+            'client.id' => 'Klient',
+            'model' => 'Model',
+            'serial_number' => 'Numer seryjny',
+            'producent_number' => 'Numer producenta',
+            'actions' => 'Akcje',
+        ];
+    }
 
-        $query = Device::query();
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
 
-        if (auth()->check() && !auth()->user()->hasRole(['Admin', 'employee'])) {
-            $query->where('user_id', auth()->id());
-        } elseif ($this->user_id) {
-            $query->where('user_id', $this->user_id);
-        }
-
-        if (!empty($this->search)) {
-            $query->where(function ($q) {
-                $q->where('model', 'like', '%' . $this->search . '%')
-                    ->orWhere('serial_number', 'like', '%' . $this->search . '%')
-                    ->orWhere('producent_number', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        $query->orderBy($this->sortField, $this->sortDirection);
-
-        $query->with('user');
-        $this->devices = $query->get();
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 
     public function loadClients()
     {
-        try {
-            $query = User::role('Client');
-
-            if (!empty($this->searchClient)) {
-                $query->where(function ($q) {
-                    $q->where('first_name', 'like', '%' . $this->searchClient . '%')
-                        ->orWhere('last_name', 'like', '%' . $this->searchClient . '%')
-                        ->orWhere('email', 'like', '%' . $this->searchClient . '%');
-                });
-            }
-
-            $this->clients = $query->get();
-        } catch (\Exception $e) {
-            \Log::error('Błąd podczas ładowania klientów: ' . $e->getMessage());
-            $this->clients = [];
-        }
-    }
-
-    public function updatedSearchClient()
-    {
-        $this->loadClients();
+        $this->clients = User::query()
+            ->when(!auth()->user()->can('devices.view_all') && auth()->user()->can('devices.view_own'), function($query){
+                $query->where('id', auth()->user()->id);
+            })
+            ->orderBy('id', 'asc')->select('id','first_name','last_name')->get()->toArray();
     }
 
     public function sortBy($field)
@@ -89,44 +71,59 @@ class Index extends Component
 
     public function confirmDelete($deviceId)
     {
-        $this->deviceToDelete = $deviceId;
-        $this->showDeleteModal = true;
+        $this->deviceId = $deviceId;
+        $this->password = '';
+        $this->modal('confim-device-deletion')->show();
     }
+    
 
     public function cancelDelete()
     {
-        $this->deviceToDelete = null;
-        $this->showDeleteModal = false;
+        $this->deviceId = null;
+        $this->password = '';
+        $this->reset('password');
     }
 
     public function deleteDevice()
     {
-        try {
-            if (!auth()->check() || !auth()->user()->hasRole(['Admin', 'employee'])) {
-                session()->flash('error', 'Nie masz uprawnień do usuwania urządzeń.');
-                $this->showDeleteModal = false;
-                return;
-            }
+        $this->validate([
+            'password'  => ['required', 'string', 'current_password']
+        ],[
+            'password.required' => 'Hasło jest wymagane.',
+            'password.string' => 'Hasło musi być tekstem.',
+            'password.current_password' => 'Hasło jest nieprawidłowe.',
+        ]);
 
-            $device = Device::find($this->deviceToDelete);
+        $device = Device::findOrFail($this->deviceId);
+        $device->delete();
 
-            if ($device) {
-                $device->delete();
-                session()->flash('message', 'Urządzenie zostało usunięte.');
-            }
+        $this->reset(['deviceId', 'password']);
 
-            $this->showDeleteModal = false;
-            $this->deviceToDelete = null;
-            return redirect()->route('devices');
-        } catch (\Exception $e) {
-            \Log::error('Błąd podczas usuwania urządzenia: ' . $e->getMessage());
-            session()->flash('error', 'Wystąpił błąd podczas usuwania urządzenia: ' . $e->getMessage());
-            $this->showDeleteModal = false;
-        }
+        Toaster::success('Urządzenie zostało usunięte.');
+        $this->modal('confim-device-deletion')->close();
+        $this->resetPage();
     }
 
     public function render()
     {
-        return view('livewire.devices.index');
+        $devices = Device::query()
+            ->with('users')
+            ->when(!auth()->user()->can('devices.view_all') && auth()->user()->can('devices.view_own'), function($query){
+                $query->where('client_id', auth()->user()->id);
+            })
+            ->when($this->search, function($query){
+                $query->where(function($q){
+                    $q->where('users.first_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('users.last_name', 'like', '%'.$this->search.'%')
+                        ->orWhere('devices.model', 'like', '%'.$this->search.'%')
+                        ->orWhere('devices.serial_number', 'like', '%'.$this->search.'%')
+                        ->orWhere('devices.producent_number', 'like', '%'.$this->search.'%');
+                });
+            })
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate($this->perPage);
+
+
+        return view('livewire.devices.index', compact('devices'));
     }
 }
