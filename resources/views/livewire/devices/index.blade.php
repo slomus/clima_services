@@ -13,15 +13,15 @@
             />
 
             <!-- Filtrowanie po kliencie -->
-            @if(auth()->check() && auth()->user()->hasRole(['Admin', 'employee']))
+            @if(auth()->check() && auth()->user()->can('devices.view_all'))
                 <flux:select
-                    wire:model.live="client_id"
+                    wire:model.live="userFilter"
                     placeholder="Wybierz klienta"
                     class="w-full sm:w-auto rounded-md px-4 py-2 border border-gray-300 focus:outline-none focus:ring focus:border-blue-500 dark:border-gray-700 dark:text-gray-200"
                 >
                     <flux:select.option value="">Wszyscy klienci</flux:select.option>
                     @foreach($clients as $client)
-                        <flux:select.option value="{{ $client->id }}">{{ $client->first_name }} {{ $client->last_name }}</flux:select.option>
+                        <flux:select.option value="{{ $client['id'] }}">{{ $client['first_name'] }} {{ $client['last_name'] }}</flux:select.option>
                     @endforeach
                 </flux:select>
             @endif
@@ -32,9 +32,20 @@
             <table class="w-full table-auto divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="sticky top-0 z-[1]">
                     <tr>
-                        @if(auth()->check() && auth()->user()->hasRole(['Admin', 'employee']))
+                        @if(auth()->check() && auth()->user()->can('devices.view_all'))
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">
-                                Klient
+                                <flux:button wire:click="sortBy('client.id')" class="group inline-flex items-center">
+                                    Klient
+                                    @if($sortField === 'client.id')
+                                        <span class="ml-1">
+                                            @if($sortDirection === 'asc')
+                                                ↑
+                                            @else
+                                                ↓
+                                            @endif
+                                        </span>
+                                    @endif
+                                </flux:button>
                             </th>
                         @endif
                         <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">
@@ -101,7 +112,7 @@
                 <tbody class="border divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse($devices as $device)
                         <tr class="border hover:bg-gray-100 dark:hover:bg-gray-600">
-                            @if(auth()->check() && auth()->user()->hasRole(['Admin', 'employee']))
+                            @if(auth()->check() && auth()->user()->can('devices.view_all'))
                                 <td class="px-4 py-4">
                                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
                                         {{ $device->user->first_name }} {{ $device->user->last_name }}
@@ -133,16 +144,16 @@
                                     <flux:icon.pencil class="text-blue-600 hover:text-blue-100 dark:hover:text-blue-400"/>
                                 </flux:link>
 
-                                @if(auth()->check() && Auth::user()->hasRole(['Admin', 'employee']))
-                                    <flux:modal.trigger name="confirm-device-deletion-{{ $device->id }}">
-                                        <flux:icon.trash wire:click="confirmDelete({{ $device->id }})" class="text-red-600 hover:text-red-100 dark:hover:text-red-400"/>
-                                    </flux:modal.trigger>
+                                @if(auth()->check() && auth()->user()->can('devices.delete'))
+                                    <flux:button wire:click="confirmDelete({{ $device->id }})" class="text-red-600 hover:text-red-100 dark:hover:text-red-400">
+                                        <flux:icon.trash />
+                                    </flux:button>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ auth()->check() && auth()->user()->hasRole(['Admin', 'employee']) ? '6' : '5' }}" class="py-6 px-4 text-center text-gray-400">
+                            <td colspan="{{ auth()->check() && auth()->user()->can('devices.view_all') ? '6' : '5' }}" class="py-6 px-4 text-center text-gray-400">
                                 Brak urządzeń spełniających kryteria wyszukiwania.
                             </td>
                         </tr>
@@ -151,25 +162,35 @@
             </table>
         </div>
 
-        <!-- Modal potwierdzenia -->
-        @foreach($devices as $device)
-            <flux:modal name="confirm-device-deletion-{{ $device->id }}" focusable class="max-w-lg">
-                <div>
-                    <flux:heading size="lg">{{ __('Jesteś pewien, że chcesz usunąć urządzenie?') }}</flux:heading>
+        <!-- Paginacja -->
+        <div class="mt-4">
+            {{ $devices->links() }}
+        </div>
 
-                    <flux:subheading>
-                        {{ __('Po usunięciu urządzenia wszystkie jego dane zostaną na stałe usunięte.') }}
-                    </flux:subheading>
+        <!-- Modal potwierdzenia usunięcia -->
+        <flux:modal name="confim-device-deletion" focusable class="max-w-lg">
+            <div>
+                <flux:heading size="lg">{{ __('Jesteś pewien, że chcesz usunąć urządzenie?') }}</flux:heading>
+
+                <flux:subheading>
+                    {{ __('Po usunięciu urządzenia wszystkie jego dane zostaną na stałe usunięte.') }}
+                </flux:subheading>
+
+                <div class="mt-4">
+                    <flux:input
+                        type="password"
+                        wire:model="password"
+                        placeholder="Potwierdź hasło"
+                        class="w-full rounded-md px-4 py-2 border border-gray-300 focus:outline-none focus:ring focus:border-blue-500 dark:border-gray-700 dark:text-gray-200"
+                    />
+                    @error('password') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                 </div>
+            </div>
 
-                <div class="mt-6 flex justify-end space-x-2">
-                    <flux:modal.close>
-                        <flux:button variant="filled">{{ __('Anuluj') }}</flux:button>
-                    </flux:modal.close>
-
-                    <flux:button variant="danger" wire:click="deleteDevice({{ $device->id }})">{{ __('Usuń urządzenie') }}</flux:button>
-                </div>
-            </flux:modal>
-        @endforeach
+            <div class="mt-6 flex justify-end space-x-2">
+                <flux:button variant="filled" wire:click="cancelDelete">{{ __('Anuluj') }}</flux:button>
+                <flux:button variant="danger" wire:click="deleteDevice">{{ __('Usuń urządzenie') }}</flux:button>
+            </div>
+        </flux:modal>
     </x-devices.layout>
 </section>
