@@ -42,7 +42,6 @@ class Edit extends Component
         $this->serviceId = $serviceId;
         $this->loadService();
 
-        // Check permissions
         $user = Auth::user();
         if (!$user->can('tickets.manage_assigned.edit') &&
             !($user->can('tickets.view_own') && $this->service->client_id === $user->id)) {
@@ -65,12 +64,10 @@ class Edit extends Component
         $user = Auth::user();
 
         if ($user->hasRole('Client')) {
-            // Client can only see their own devices
             $this->devices = Device::where('client_id', $user->id)->get();
             $this->clients = collect([$user]);
         } else {
             if ($this->client_id) {
-                // Admin/Technical can filter devices by client
                 $this->devices = Device::where('client_id', $this->client_id)->get();
             } else {
                 $this->devices = Device::all();
@@ -119,14 +116,12 @@ class Edit extends Component
     {
         $user = Auth::user();
 
-        // Check edit permissions
         if (!$user->can('tickets.manage_assigned.edit') &&
             !($user->can('tickets.view_own') && $this->service->client_id === $user->id)) {
             session()->flash('error', 'Nie masz uprawnień do edycji tego zgłoszenia.');
             return redirect()->route('services');
         }
 
-        // Special logic for client users (can only edit description)
         if ($user->hasRole('Client') && $this->service->client_id === $user->id) {
             $this->service->update([
                 'description' => $this->description,
@@ -136,7 +131,6 @@ class Edit extends Component
             return redirect()->route('services');
         }
 
-        // Full validation for admin/technician users
         $this->validate();
 
         $serviceDate = Carbon::parse($this->service_date)->format('Y-m-d H:i:s');

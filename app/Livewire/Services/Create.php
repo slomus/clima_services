@@ -75,7 +75,6 @@ class Create extends Component
 
     public function loadTechnicians()
     {
-        // Load technicians - users with Technical role
         $this->technicians = User::role('Technical')->get();
     }
 
@@ -84,11 +83,9 @@ class Create extends Component
         $user = Auth::user();
 
         if ($user->hasRole('Client')) {
-            // Client can only see their own devices
             $this->devices = Device::where('client_id', $user->id)->get();
         } else {
             if ($this->client_id) {
-                // Admin/Technical can filter devices by client
                 $this->devices = Device::where('client_id', $this->client_id)->get();
             } else {
                 $this->devices = [];

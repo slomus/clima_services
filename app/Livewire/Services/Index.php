@@ -15,23 +15,19 @@ class Index extends Component
 {
     use WithPagination;
 
-    // Sorting and filtering properties
     public $search = '';
     public $status = '';
     public $sortField = 'created_at';
     public $sortDirection = 'desc';
     public $client_id = null;
 
-    // Modal control
     public $deleteModalOpen = false;
     public $serviceToDelete = null;
 
-    // Invoice modal
     public $invoiceModalOpen = false;
     public $currentInvoice = null;
     public $currentService = null;
 
-    // Data for dropdowns
     public $clients = [];
 
     public function mount()
@@ -138,7 +134,6 @@ class Index extends Component
         session()->flash('message', 'Status zgłoszenia został zaktualizowany.');
     }
 
-    // Simplified invoice modal functions
     public function viewInvoice($serviceId)
     {
         $service = Service::with(['invoice'])->findOrFail($serviceId);
@@ -166,7 +161,6 @@ class Index extends Component
             ->with(['device', 'client', 'user'])
             ->where('status', '!=', 'pending_approval');
 
-        // Wyszukiwanie
         if (!empty($this->search)) {
             $query->where(function ($q) {
                 $q->where('description', 'like', '%' . $this->search . '%')
@@ -182,22 +176,18 @@ class Index extends Component
             });
         }
 
-        // Filtr po statusie
         if (!empty($this->status)) {
             $query->where('status', $this->status);
         }
 
-        // Filtr po kliencie
         if (!empty($this->client_id)) {
             $query->where('client_id', $this->client_id);
         }
 
-        // Klient widzi tylko swoje zgłoszenia
         if (auth()->check() && auth()->user()->hasRole('Client')) {
             $query->where('client_id', auth()->id());
         }
 
-        // Sortowanie
         $query->orderBy($this->sortField, $this->sortDirection);
 
         $services = $query->paginate(10);
