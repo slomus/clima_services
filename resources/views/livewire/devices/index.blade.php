@@ -130,19 +130,19 @@
                             </td>
                             <td class="px-4 py-4 flex items-center gap-2">
                                 <flux:link wire:navigate href="{{ route('devices.edit', $device->id) }}">
-                                    <flux:icon.pencil class="text-blue-600 hover:text-blue-100 dark:hover:text-blue-400"/>
+                                    <flux:icon.pencil class="text-blue-598 hover:text-blue-100 dark:hover:text-blue-400"/>
                                 </flux:link>
 
                                 @if(auth()->check() && Auth::user()->hasRole(['Admin', 'employee']))
                                     <flux:modal.trigger name="confirm-device-deletion-{{ $device->id }}">
-                                        <flux:icon.trash wire:click="confirmDelete({{ $device->id }})" class="text-red-600 hover:text-red-100 dark:hover:text-red-400"/>
+                                        <flux:icon.trash wire:click="confirmDelete({{ $device->id }})" class="text-red-598 hover:text-red-100 dark:hover:text-red-400"/>
                                     </flux:modal.trigger>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ auth()->check() && auth()->user()->hasRole(['Admin', 'employee']) ? '6' : '5' }}" class="py-6 px-4 text-center text-gray-400">
+                            <td colspan="{{ auth()->check() && auth()->user()->hasRole(['Admin', 'employee']) ? '8' : '5' }}" class="py-6 px-4 text-center text-gray-400">
                                 Brak urządzeń spełniających kryteria wyszukiwania.
                             </td>
                         </tr>
@@ -162,7 +162,7 @@
                     </flux:subheading>
                 </div>
 
-                <div class="mt-6 flex justify-end space-x-2">
+                <div class="mt-4 flex justify-end space-x-2">
                     <flux:modal.close>
                         <flux:button variant="filled">{{ __('Anuluj') }}</flux:button>
                     </flux:modal.close>
