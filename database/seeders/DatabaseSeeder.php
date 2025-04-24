@@ -90,11 +90,15 @@ class DatabaseSeeder extends Seeder
             'tickets.create',
             'tickets.manage_assigned.view',
             'tickets.manage_assigned.edit',
+            'tickets.report',
+            'tickets.approve',
+            'tickets.pending.view',
 
             // Faktury
             'invoices.view_all',
             'invoices.view_own',
             'invoices.view_own.download',
+
         ];
 
         foreach ($permissions as $permission) {
@@ -110,7 +114,7 @@ class DatabaseSeeder extends Seeder
             [
                 'first_name' => 'Ad',
                 'last_name' => 'Min',
-                'password' => Hash::make('admin124'),
+                'password' => Hash::make('admin123'),
                 'address_city_id' => 2,
             ]
         );
@@ -134,6 +138,8 @@ class DatabaseSeeder extends Seeder
             'tickets.create',
             'tickets.manage_assigned.view',
             'tickets.manage_assigned.edit',
+            'tickets.approve',
+            'tickets.pending.view',
 
         ];
         $technicalRole->givePermissionTo($technicalPermissions);
@@ -143,7 +149,7 @@ class DatabaseSeeder extends Seeder
             [
                 'first_name' => 'Tech',
                 'last_name' => 'Nic',
-                'password' => Hash::make('technic124'),
+                'password' => Hash::make('technic123'),
                 'address_city_id' => 2,
             ]
         );
@@ -159,6 +165,7 @@ class DatabaseSeeder extends Seeder
             // Zgłoszenia (tworzenie i przeglądanie własnych)
             'tickets.create',
             'tickets.view_own',
+            'tickets.report',
 
             // Faktury (tylko własne)
             'invoices.view_own',
@@ -172,7 +179,7 @@ class DatabaseSeeder extends Seeder
                 'first_name' => 'Cli',
                 'last_name' => 'Ent',
                 'password' => Hash::make('client123'),
-                'address_city_id' => 1,
+                'address_city_id' => 2,
             ]
         );
         $client->syncRoles($clientRole);

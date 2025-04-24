@@ -44,6 +44,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get("/services/index", ServicesIndex::class)->name('services.index');
     Route::get("/services/create", ServicesCreate::class)->name('services.create');
     Route::get("services/{serviceId}/edit", ServicesEdit::class)->name('services.edit');
+    Route::get('/services/report', App\Livewire\Services\ReportService::class)->name('services.report')->middleware('role:Client');
+    Route::get('/services/pending-approvals', App\Livewire\Services\PendingApprovals::class)->name('services.pending-approvals')->middleware('permission:tickets.approve');
 });
 
 require __DIR__ . '/auth.php';
