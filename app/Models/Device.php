@@ -11,7 +11,7 @@ class Device extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'client_id',
         'model',
         'producent_number',
         'serial_number',
@@ -24,25 +24,21 @@ class Device extends Model
         'warranty_end_date' => 'date',
     ];
 
-    // Relacja do użytkownika (klienta)
     public function client()
     {
         return $this->belongsTo(User::class, 'client_id');
     }
 
-    // Relacja do serwisów
     public function services()
     {
         return $this->hasMany(Service::class);
     }
 
-    // Sprawdzenie czy urządzenie jest na gwarancji
     public function isUnderWarranty()
     {
         if (!$this->warranty_end_date) {
             return false;
         }
-
         return Carbon::now()->lte($this->warranty_end_date);
     }
 
@@ -52,14 +48,12 @@ class Device extends Model
             ->where('status', 'completed')
             ->orderBy('created_at', 'desc')
             ->first();
-
         if (!$lastService) {
             if ($this->purchase_date) {
                 return $this->purchase_date->diffInMonths(Carbon::now()) >= 12;
             }
             return false;
         }
-
         return $lastService->created_at->diffInMonths(Carbon::now()) >= 12;
     }
 
@@ -68,7 +62,6 @@ class Device extends Model
         if (!$this->warranty_end_date) {
             return 0;
         }
-
         $daysLeft = Carbon::now()->diffInDays($this->warranty_end_date, false);
         return max(0, $daysLeft);
     }

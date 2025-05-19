@@ -5,20 +5,20 @@
         <!-- Wyszukiwanie i filtrowanie -->
         <div class="flex flex-col sm:flex-row justify-between mb-4 gap-4">
             <!-- Wyszukiwanie -->
-            <flux:input 
-                type="text" 
-                wire:model.live.debounce.100ms="search" 
-                placeholder="Szukaj użytkownika..." 
+            <flux:input
+                type="text"
+                wire:model.live.debounce.100ms="search"
+                placeholder="Szukaj użytkownika..."
                 class="w-full sm:w-auto rounded-md px-4 py-2 border border-gray-300 focus:outline-none focus:ring focus:border-blue-500 dark:border-gray-700 dark:text-gray-200"
             />
 
             <!-- Filtrowanie po roli -->
-            <flux:select 
-                wire:model.live="roleFilter" 
-                placeholder="Wybierz rolę" 
+            <flux:select
+                wire:model.live="roleFilter"
+                placeholder="Wybierz rolę"
                 class="w-full sm:w-auto rounded-md px-4 py-2 border border-gray-300 focus:outline-none focus:ring focus:border-blue-500 dark:border-gray-700 dark:text-gray-200"
             >
-                <flux:select.option value="">Wybierz rolę</flux:select.option>
+                <flux:select.option value="">Wszystkie role</flux:select.option>
                 @foreach($roles as $role)
                     <flux:select.option value="{{ $role }}">{{ $role }}</flux:select.option>
                 @endforeach
@@ -49,7 +49,6 @@
                                     @else
                                         {{ $value }}
                                     @endif
-                                    
                                 </th>
                             @endforeach
                         </tr>
@@ -81,9 +80,9 @@
 
                                     @if(auth()->user()->hasRole('Admin') && (!$user->hasRole('Admin') || auth()->id() !== $user->id))
                                         @canany(['users.delete','clients.delete'])
-                                            <flux:modal.trigger name="confirm-user-account-deletion">
-                                                <flux:icon.trash wire:click="confirmDelete({{ $user->id }})" class="text-red-600 hover:text-red-100 dark:hover:text-red-400"/>
-                                            </flux:modal.trigger>
+                                            <flux:button wire:click="confirmDelete({{ $user->id }})" class="text-red-600 hover:text-red-100 dark:hover:text-red-400">
+                                                <flux:icon.trash />
+                                            </flux:button>
                                         @endcanany
                                     @endif
                                 </td>
@@ -99,27 +98,35 @@
                 </table>
             </div>
 
-            <!-- Modal potwierdzenia -->
-            <flux:modal name="confirm-user-account-deletion" :show="$errors->isNotEmpty()" focusable class="max-w-lg">
-                <form wire:submit.prevent="deleteUser" class="space-y-6">
-                    <div>
-                        <flux:heading size="lg">{{ __('Jesteś pewien, że chcesz usunąć konto?') }}</flux:heading>
+            <!-- Paginacja -->
+            <div class="mt-4">
+                {{ $users->links() }}
+            </div>
 
-                        <flux:subheading>
-                            {{ __('Po usunięciu konta wszystkie jego zasoby i dane zostaną na stałe usunięte. Wprowadź hasło, aby potwierdzić, że chcesz na stałe usunąć swoje konto.') }}
-                        </flux:subheading>
+            <!-- Modal potwierdzenia usunięcia -->
+            <flux:modal name="confirm-user-account-deletion" focusable class="max-w-lg">
+                <div>
+                    <flux:heading size="lg">{{ __('Jesteś pewien, że chcesz usunąć konto?') }}</flux:heading>
+
+                    <flux:subheading>
+                        {{ __('Po usunięciu konta wszystkie jego zasoby i dane zostaną na stałe usunięte.') }}
+                    </flux:subheading>
+
+                    <div class="mt-4">
+                        <flux:input
+                            type="password"
+                            wire:model="password"
+                            placeholder="Potwierdź hasło"
+                            class="w-full rounded-md px-4 py-2 border border-gray-300 focus:outline-none focus:ring focus:border-blue-500 dark:border-gray-700 dark:text-gray-200"
+                        />
+                        @error('password') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                     </div>
+                </div>
 
-                    <flux:input wire:model="password" :label="__('Hasło')" type="password" />
-
-                    <div class="flex justify-end space-x-2">
-                        <flux:modal.close>
-                            <flux:button variant="filled">{{ __('Anuluj') }}</flux:button>
-                        </flux:modal.close>
-
-                        <flux:button variant="danger" type="submit">{{ __('Usuń konto') }}</flux:button>
-                    </div>
-                </form>
+                <div class="mt-6 flex justify-end space-x-2">
+                    <flux:button variant="filled" wire:click="cancelDelete">{{ __('Anuluj') }}</flux:button>
+                    <flux:button variant="danger" wire:click="deleteUser">{{ __('Usuń konto') }}</flux:button>
+                </div>
             </flux:modal>
         @endcanany
     </x-users.layout>
