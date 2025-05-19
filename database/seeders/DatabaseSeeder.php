@@ -17,30 +17,30 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // User::factory(11)->create();
 
 
         $citys = [
-            ['id' => 1, 'name' => 'Bydgoszcz'],
-            ['id' => 2, 'name' => 'Warszawa'],
-            ['id' => 3, 'name' => 'Kraków'],
-            ['id' => 4, 'name' => 'Wrocław'],
-            ['id' => 5, 'name' => 'Poznań'],
-            ['id' => 6, 'name' => 'Gdańsk'],
-            ['id' => 7, 'name' => 'Szczecin'],
-            ['id' => 8, 'name' => 'Lublin'],
-            ['id' => 9, 'name' => 'Białystok'],
-            ['id' => 10, 'name' => 'Katowice'],
-            ['id' => 11, 'name' => 'Gdynia'],
-            ['id' => 12, 'name' => 'Częstochowa'],
-            ['id' => 13, 'name' => 'Radom'],
-            ['id' => 14, 'name' => 'Rzeszów'],
-            ['id' => 15, 'name' => 'Toruń'],
-            ['id' => 16, 'name' => 'Sosnowiec'],
-            ['id' => 17, 'name' => 'Kielce'],
-            ['id' => 18, 'name' => 'Gliwice'],
-            ['id' => 19, 'name' => 'Olsztyn'],
-            ['id' => 20, 'name' => 'Zielona Góra'],
+            ['id' => 2, 'name' => 'Bydgoszcz'],
+            ['id' => 3, 'name' => 'Warszawa'],
+            ['id' => 4, 'name' => 'Kraków'],
+            ['id' => 5, 'name' => 'Wrocław'],
+            ['id' => 6, 'name' => 'Poznań'],
+            ['id' => 7, 'name' => 'Gdańsk'],
+            ['id' => 8, 'name' => 'Szczecin'],
+            ['id' => 9, 'name' => 'Lublin'],
+            ['id' => 10, 'name' => 'Białystok'],
+            ['id' => 11, 'name' => 'Katowice'],
+            ['id' => 12, 'name' => 'Gdynia'],
+            ['id' => 13, 'name' => 'Częstochowa'],
+            ['id' => 14, 'name' => 'Radom'],
+            ['id' => 15, 'name' => 'Rzeszów'],
+            ['id' => 16, 'name' => 'Toruń'],
+            ['id' => 17, 'name' => 'Sosnowiec'],
+            ['id' => 18, 'name' => 'Kielce'],
+            ['id' => 19, 'name' => 'Gliwice'],
+            ['id' => 20, 'name' => 'Olsztyn'],
+            ['id' => 21, 'name' => 'Zielona Góra'],
         ];
 
         foreach ($citys as $city) {
@@ -50,56 +50,138 @@ class DatabaseSeeder extends Seeder
             );
         }
 
+        // Tworzenie uprawnień
         $permissions = [
-            'manage_users',
-            'manage_clients',
-            'manage_roles',
+            // Użytkownicy
+            'users.view',
+            'users.create',
+            'users.edit',
+            'users.delete',
 
-            //devices
-            'view_all_devices',
-            'manage_devices',
-            'view_assigned_devices',
-            'manage_assigned_devices',
-            'view_own_devices',
+            // Klienci
+            'clients.view',
+            'clients.create',
+            'clients.edit',
+            'clients.delete',
 
-            //tickets
-            'view_all_tickets',
-            'manage_tickets',
-            'view_assigned_tickets',
-            'manage_assigned_tickets',
-            'create_tickets',
-            'view_own_tickets',
+            // Role
+            'roles.view',
+            'roles.create',
+            'roles.edit',
+            'roles.delete',
 
-            //invoices
-            'view_all_invoices',
-            'manage_invoices',
-            'view_onw_invoices'
+            //Uprawnienia
+            'permissions.view',
+            'permissions.create',
+            'permissions.edit',
+            'permissions.delete',
+
+            // Urządzenia
+            'devices.create',
+            'devices.view_all',
+            'devices.view_own',
+            'devices.manage_assigned.view',
+            'devices.manage_assigned.edit',
+
+            // Zgłoszenia
+            'tickets.view_all',
+            'tickets.view_assigned',
+            'tickets.view_own',
+            'tickets.create',
+            'tickets.manage_assigned.view',
+            'tickets.manage_assigned.edit',
+            'tickets.report',
+            'tickets.approve',
+            'tickets.pending.view',
+
+            // Faktury
+            'invoices.view_all',
+            'invoices.view_own',
+            'invoices.view_own.download',
+
         ];
-    
+
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
-    
-        // Tworzenie ról i przypisywanie uprawnień
-        $adminRole = Role::create(['name' => 'Admin']);
-        $adminRole->givePermissionTo($permissions); // Admin ma wszystkie uprawnienia
-    
-        $technicalRole = Role::create(['name' => 'Technical']);
-        $technicalRole->givePermissionTo([
-            'manage_clients',
-            'view_all_devices',
-            'view_assigned_devices',
-            'manage_assigned_devices',
-            'view_assigned_tickets',
-            'manage_assigned_tickets'
-        ]);
-    
-        $clientRole = Role::create(['name' => 'Client']);
-        $clientRole->givePermissionTo([
-            'view_own_devices',
-            'create_tickets',
-            'view_own_tickets',
-            'view_onw_invoices'
-        ]);
+
+        // Rola Administratora
+        $adminRole = Role::firstOrCreate(['name' => 'Admin']);
+        $adminRole->givePermissionTo($permissions);
+
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'first_name' => 'Ad',
+                'last_name' => 'Min',
+                'password' => Hash::make('admin123'),
+                'address_city_id' => 2,
+            ]
+        );
+        $admin->syncRoles($adminRole);
+
+        // Rola Techniczna
+        $technicalRole = Role::firstOrCreate(['name' => 'Technical']);
+        $technicalPermissions = [
+            'clients.view',
+            'clients.create',
+            'clients.edit',
+
+            // Urządzenia (zarządzanie przypisanymi)
+            'devices.create',
+            'devices.view_all',
+            'devices.manage_assigned.view',
+            'devices.manage_assigned.edit',
+
+            // Zgłoszenia (zarządzanie przypisanymi)
+            'tickets.view_assigned',
+            'tickets.create',
+            'tickets.manage_assigned.view',
+            'tickets.manage_assigned.edit',
+            'tickets.approve',
+            'tickets.pending.view',
+
+        ];
+        $technicalRole->givePermissionTo($technicalPermissions);
+
+        $technician = User::firstOrCreate(
+            ['email' => 'technic@example.com'],
+            [
+                'first_name' => 'Tech',
+                'last_name' => 'Nic',
+                'password' => Hash::make('technic123'),
+                'address_city_id' => 2,
+            ]
+        );
+        $technician->syncRoles($technicalRole);
+
+        // Rola Klienta
+        $clientRole = Role::firstOrCreate(['name' => 'Client']);
+        $clientPermissions = [
+            // Urządzenia (tylko własne)
+            'devices.view_own',
+            'devices.create',
+
+            // Zgłoszenia (tworzenie i przeglądanie własnych)
+            'tickets.create',
+            'tickets.view_own',
+            'tickets.report',
+
+            // Faktury (tylko własne)
+            'invoices.view_own',
+            'invoices.view_own.download',
+        ];
+        $clientRole->givePermissionTo($clientPermissions);
+
+        $client = User::firstOrCreate(
+            ['email' => 'client@example.com'],
+            [
+                'first_name' => 'Cli',
+                'last_name' => 'Ent',
+                'password' => Hash::make('client123'),
+                'address_city_id' => 2,
+            ]
+        );
+        $client->syncRoles($clientRole);
     }
 }

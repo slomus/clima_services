@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
             $table->string('hash')->nullable()->unique();
-            $table->foreignid('address_city_id')->constrained('cities')->nullable();
+            $table->foreignid('address_city_id')->nullable()->constrained('cities')->nullable();
             $table->string('address_street')->nullable();
             $table->string('address_home_number')->nullable();
             $table->string('address_apartment_number')->nullable();

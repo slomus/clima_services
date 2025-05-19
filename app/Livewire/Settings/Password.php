@@ -25,6 +25,12 @@ class Password extends Component
             $validated = $this->validate([
                 'current_password' => ['required', 'string', 'current_password'],
                 'password' => ['required', 'string', PasswordRule::defaults(), 'confirmed'],
+            ],[
+                'current_password.required' => 'Aktualne hasło jest wymagane',
+                'current_password.string' => 'Aktualne hasło musi być ciągiem znaków',
+                'current_password.current_password' => 'Aktualne hasło jest nieprawidłowe',
+                'password.required' => 'Hasło jest wymagane',
+                'password.string' => 'Hasło musi być ciągiem znaków',
             ]);
         } catch (ValidationException $e) {
             $this->reset('current_password', 'password', 'password_confirmation');

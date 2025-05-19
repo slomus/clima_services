@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('device_id')->constrained('devices')->onDelete('cascade');
             $table->foreignId('client_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->foreignId('invoice_id')->nullable()->constrained('invoices')->onDelete('cascade');
             $table->dateTime('service_date');
             $table->enum('status', ['reported','planned','in_progress','completed','failed', 'pending_approval'])->default('reported');
