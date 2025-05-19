@@ -1,5 +1,7 @@
 <?php
 
+use App\Livewire\Dashboard\Index as Dashboard;
+use App\Livewire\Reports\Index as ReportsIndex;
 use App\Livewire\Settings\Appearance as SettingsAppearance;
 use App\Livewire\Settings\Password as SettingsPassword;
 use App\Livewire\Settings\Profile as SettingsProfile;
@@ -19,12 +21,11 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
+
+    Route::get('/dashboard', Dashboard::class)->name('dashboard');
 
     Route::get('settings/profile', SettingsProfile::class)->name('settings.profile');
     Route::get('settings/password', SettingsPassword::class)->name('settings.password');
@@ -46,6 +47,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get("services/{serviceId}/edit", ServicesEdit::class)->name('services.edit');
     Route::get('/services/report', App\Livewire\Services\ReportService::class)->name('services.report')->middleware('role:Client');
     Route::get('/services/pending-approvals', App\Livewire\Services\PendingApprovals::class)->name('services.pending-approvals')->middleware('permission:tickets.approve');
+    Route::get('/reports', ReportsIndex::class)->name('reports.index');
+    Route::get('/services/invoice/{invoice}', [ServicesIndex::class, 'downloadInvoice'])->name('services.download-invoice');
 });
 
 require __DIR__ . '/auth.php';

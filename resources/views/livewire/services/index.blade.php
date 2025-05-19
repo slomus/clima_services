@@ -187,9 +187,9 @@
 
                                 <!-- Mark as completed -->
                                 @if(auth()->user()->can('tickets.manage_assigned.edit') && $service->status !== 'completed')
-                                <button wire:click="updateServiceStatus({{ $service->id }}, 'completed')">
-                                    <flux:icon.check-circle class="text-green-600 hover:text-green-100 dark:hover:text-green-400"/>
-                                </button>
+                                    <flux:modal.trigger name="invoice-modal">
+                                        <button wire:click="openInvoiceModal({{ $service->id }})" class="text-green-400 hover:text-green-300"><flux:icon.check-circle class="text-green-600 hover:text-green-100 dark:hover:text-green-400"/></button>
+                                    </flux:modal.trigger>
                                 @endif
 
                                 <!-- Delete -->
@@ -197,6 +197,17 @@
                                 <flux:modal.trigger name="confirm-service-deletion-{{ $service->id }}">
                                     <flux:icon.trash wire:click="confirmDelete({{ $service->id }})" class="text-red-600 hover:text-red-100 dark:hover:text-red-400"/>
                                 </flux:modal.trigger>
+                                @endif
+
+                                @if($service->status === 'completed' && $service->invoice)
+                                    <a
+                                        href="{{ route('services.download-invoice', $service->invoice->id) }}"
+                                        target="_blank"
+                                        class="text-indigo-600 hover:text-indigo-400 flex items-center gap-1"
+                                        title="Pobierz fakturę"
+                                    >
+                                        <flux:icon.arrow-down-tray class="w-5 h-5"/>
+                                    </a>
                                 @endif
                             </td>
                         </tr>
@@ -236,5 +247,34 @@
                 </div>
             </flux:modal>
         @endforeach
+
+
+        <!-- Modal faktury w stylu Flux -->
+        @if($invoiceModalOpen)
+            <flux:modal name="invoice-modal" focusable class="max-w-lg">
+                <div>
+                    <flux:heading size="lg">Podaj kwotę faktury</flux:heading>
+                </div>
+                <form wire:submit.prevent="finishServiceAndGenerateInvoice">
+                    <div class="my-6">
+                        <flux:input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            wire:model="invoiceAmount"
+                            :label="'Kwota brutto (PLN)'"
+                            required
+                        />
+                        @error('invoiceAmount') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <flux:modal.close>
+                            <flux:button variant="filled">Anuluj</flux:button>
+                        </flux:modal.close>
+                        <flux:button variant="primary" type="submit">Zakończ serwis i wystaw fakturę</flux:button>
+                    </div>
+                </form>
+            </flux:modal>
+        @endif
     </x-services.layout>
 </section>

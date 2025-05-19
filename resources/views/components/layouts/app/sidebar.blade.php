@@ -19,6 +19,9 @@
                     @endcanany
                     <flux:navlist.item icon="clipboard-document-list" :href="route('devices.index')" :current="request()->routeIs('devices.index')" wire:navigate>{{ __('Urządzenia') }}</flux:navlist.item>
                     <flux:navlist.item icon="wrench" :href="route('services.index')" :current="request()->routeIs('services.index')" wire:navigate>{{ __('Serwisy') }}</flux:navlist.item>
+                    @can(['invoices.view_all'])
+                        <flux:navlist.item icon="document-text" :href="route('reports.index')" :current="request()->routeIs('reports.index')" wire:navigate>{{ __('Raporty') }}</flux:navlist.item>
+                    @endcan
                 </flux:navlist.group>
             </flux:navlist>
 

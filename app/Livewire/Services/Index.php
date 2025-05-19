@@ -5,10 +5,12 @@ namespace App\Livewire\Services;
 use App\Models\Service;
 use App\Models\User;
 use App\Models\Device;
-use App\Models\Invoices;
+use App\Models\Invoice;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class Index extends Component
@@ -25,7 +27,8 @@ class Index extends Component
     public $serviceToDelete = null;
 
     public $invoiceModalOpen = false;
-    public $currentInvoice = null;
+    public $invoiceAmount = null;
+    public $invoiceServiceId = null;
     public $currentService = null;
 
     public $clients = [];
@@ -144,15 +147,103 @@ class Index extends Component
         }
 
         $this->currentService = $service;
-        $this->currentInvoice = $service->invoice;
+        $this->invoiceModalOpen = true;
+    }
+
+    public function openInvoiceModal($serviceId)
+    {
+        $this->invoiceServiceId = $serviceId;
+        $this->invoiceAmount = null;
         $this->invoiceModalOpen = true;
     }
 
     public function closeInvoiceModal()
     {
         $this->invoiceModalOpen = false;
-        $this->currentInvoice = null;
         $this->currentService = null;
+    }
+
+    public function finishServiceAndGenerateInvoice()
+    {
+        $this->validate([
+            'invoiceAmount' => 'required|numeric|min:0.01',
+        ]);
+
+        $service = Service::with(['device', 'client', 'user'])->findOrFail($this->invoiceServiceId);
+
+        // Ustaw status na zakończony
+        $service->status = 'completed';
+        $service->save();
+
+        // Utwórz fakturę
+        $invoice = new Invoice();
+        $invoice->client_id = $service->client_id;
+        $invoice->for = 'Serwis urządzenia ' . $service->device->model . ' (' . $service->device->serial_number . ')';
+        $invoice->issue_date = now();
+        $invoice->due_date = now()->addDays(14);
+        $invoice->amount = $this->invoiceAmount;
+        $invoice->payment_status = 'new';
+        $invoice->save();
+
+        $service->invoice_id = $invoice->id;
+        $service->save();
+
+        // Generuj PDF i zapisz do storage
+        $fileName = 'invoice-' . $invoice->id . '.pdf';
+        $pdfContent = $this->generateInvoicePdf($invoice, $service);
+        Storage::put('public/invoices/' . $fileName, $pdfContent);
+
+        // Zaktualizuj ścieżkę pliku w fakturze
+        $invoice->file_path = 'invoices/' . $fileName;
+        $invoice->save();
+
+        $this->invoiceModalOpen = false;
+        $this->invoiceAmount = null;
+        $this->invoiceServiceId = null;
+
+        session()->flash('message', 'Serwis zakończony i faktura wystawiona.');
+    }
+
+    public function downloadInvoice($invoiceId)
+    {
+        $invoice = Invoice::findOrFail($invoiceId);
+        $service = Service::where('invoice_id', $invoice->id)->first();
+
+        $fileName = 'invoice-' . $invoice->id . '.pdf';
+        $publicPath = storage_path('app/public/invoices/' . $fileName);
+        $privatePath = storage_path('app/private/public/invoices/' . $fileName);
+
+        if (file_exists($publicPath)) {
+            return response()->download($publicPath);
+
+        } elseif (file_exists($privatePath)) {
+            return response()->download($privatePath);
+        } else {
+            // Możesz tu wygenerować PDF jeśli nie istnieje
+            abort(404, 'Faktura nie istnieje.');
+        }
+    }
+
+    protected function generateInvoicePdf($invoice, $service)
+    {
+        try {
+            $pdf = Pdf::loadView('pdf.invoice', [
+                'invoice' => $invoice,
+                'service' => $service,
+                'client' => $service->client,
+                'company' => [
+                    'name' => 'clima_service',
+                    'address' => 'czekoladowa 12',
+                    'phone' => '420133769',
+                    'email' => 'clima@company.com',
+                    'tax_id' => '1'
+                ]
+            ])->setOptions(['defaultFont' => 'DejaVu Sans']);
+            return $pdf->output();
+        } catch (\Exception $e) {
+            \Log::error('PDF Generation failed: ' . $e->getMessage());
+            return Pdf::loadHTML('<h1>Faktura</h1><p>Error generating PDF</p>')->output();
+        }
     }
 
     public function render()
