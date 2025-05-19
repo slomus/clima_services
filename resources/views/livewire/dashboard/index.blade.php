@@ -21,6 +21,25 @@
             <div class="text-3xl font-bold">{{ $devicesCount }}</div>
             <div class="text-sm text-gray-500">{{ __('Liczba urządzeń') }}</div>
         </div>
+        <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-900 p-6 flex flex-col items-center">
+            <flux:icon.document-text class="text-indigo-500 mb-2" size="lg" />
+            <div class="text-3xl font-bold">{{ $invoicesCount }}</div>
+            <div class="text-sm text-gray-500">{{ __('Liczba faktur') }}</div>
+            <div class="mt-2 text-lg font-semibold text-indigo-700 dark:text-indigo-300">
+                {{ number_format($invoicesSum, 2) }} zł
+            </div>
+            <div class="mt-2 w-full">
+                @foreach(['new' => 'Nowe', 'in_progress' => 'W trakcie', 'completed' => 'Opłacone', 'failed' => 'Anulowane'] as $status => $label)
+                    <div class="flex justify-between text-xs mt-1">
+                        <span>{{ $label }}</span>
+                        <span>
+                            {{ $invoicesByStatus[$status]->count ?? 0 }} /
+                            {{ number_format($invoicesByStatus[$status]->sum ?? 0, 2) }} zł
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
     </div>
 
     <div class="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-zinc-900 p-6">

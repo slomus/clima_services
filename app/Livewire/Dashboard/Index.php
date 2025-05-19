@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\User;
 use App\Models\Service;
 use App\Models\Device;
+use App\Models\Invoice;
 
 class Index extends Component
 {
@@ -13,6 +14,9 @@ class Index extends Component
     public $openServicesCount;
     public $devicesCount;
     public $calendarEvents = [];
+    public $invoicesCount = 0;
+    public $invoicesSum = 0;
+    public $invoicesByStatus = [];
 
     public function mount()
     {
@@ -21,6 +25,13 @@ class Index extends Component
         $this->devicesCount = Device::count();
 
         $this->loadCalendarEvents();
+
+        $this->invoicesCount = Invoice::count();
+        $this->invoicesSum = Invoice::sum('amount');
+        $this->invoicesByStatus = Invoice::selectRaw('payment_status, COUNT(*) as count, SUM(amount) as sum')
+            ->groupBy('payment_status')
+            ->get()
+            ->keyBy('payment_status');
     }
 
     public function loadCalendarEvents()
