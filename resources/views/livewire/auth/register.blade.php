@@ -29,13 +29,13 @@
 
         <div class="flex items-center justify-end">
             <flux:button type="submit" variant="primary" class="w-full">
-                {{ __('Create account') }}
+                {{ __('Utwórz konto') }}
             </flux:button>
         </div>
     </form>
 
     <div class="space-x-1 text-center text-sm text-zinc-600 dark:text-zinc-400">
-        {{ __('Already have an account?') }}
-        <flux:link :href="route('login')" wire:navigate>{{ __('Log in') }}</flux:link>
+        {{ __('Masz już konto?') }}
+        <flux:link :href="route('login')" wire:navigate>{{ __('Zaloguj się') }}</flux:link>
     </div>
 </div>

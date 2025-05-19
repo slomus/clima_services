@@ -57,7 +57,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    
+
     /**
      * Get the user's initials
      */
@@ -109,5 +109,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Calendar::class);
     }
-
 }

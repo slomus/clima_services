@@ -142,7 +142,7 @@
                             </td>
                             <td class="px-4 py-4 flex items-center gap-2">
                                 <flux:link wire:navigate href="{{ route('devices.edit', $device->id) }}">
-                                    <flux:icon.pencil class="text-blue-600 hover:text-blue-100 dark:hover:text-blue-400"/>
+                                    <flux:icon.pencil class="text-blue-598 hover:text-blue-100 dark:hover:text-blue-400"/>
                                 </flux:link>
 
                                 @if(auth()->check() && auth()->user()->can('devices.delete'))
