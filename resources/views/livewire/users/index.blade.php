@@ -80,9 +80,9 @@
 
                                     @if(auth()->user()->hasRole('Admin') && (!$user->hasRole('Admin') || auth()->id() !== $user->id))
                                         @canany(['users.delete','clients.delete'])
-                                            <flux:button wire:click="confirmDelete({{ $user->id }})" class="text-red-600 hover:text-red-100 dark:hover:text-red-400">
-                                                <flux:icon.trash />
-                                            </flux:button>
+                                        <flux:modal.trigger name="confirm-user-account-deletion">
+                                            <flux:icon.trash wire:click="confirmDelete({{ $user->id }})" class="text-red-600 hover:text-red-100 dark:hover:text-red-400"/>
+                                        </flux:modal.trigger>
                                         @endcanany
                                     @endif
                                 </td>

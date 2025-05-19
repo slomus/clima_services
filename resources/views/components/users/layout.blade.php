@@ -1,8 +1,12 @@
 <div class="flex items-start max-md:flex-col">
     <div class="mr-10 w-full pb-4 md:w-[220px]">
         <flux:navlist>
-            <flux:navlist.item :href="route('users.index')" wire:navigate>{{ __('Lista') }}</flux:navlist.item>
-            <flux:navlist.item :href="route('users.create')" wire:navigate>{{ __('Dodaj') }}</flux:navlist.item>
+            @canany(['users.view', 'clients.view'])
+                <flux:navlist.item :href="route('users.index')" wire:navigate>{{ __('Lista') }}</flux:navlist.item>
+            @endcanany
+            @canany(['users.create', 'clients.create'])
+                <flux:navlist.item :href="route('users.create')" wire:navigate>{{ __('Dodaj') }}</flux:navlist.item>
+            @endcanany
         </flux:navlist>
     </div>
 

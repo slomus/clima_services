@@ -34,9 +34,9 @@
                     <tr>
                         @if(auth()->check() && auth()->user()->can('devices.view_all'))
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-300">
-                                <flux:button wire:click="sortBy('client.id')" class="group inline-flex items-center">
+                                <flux:button wire:click="sortBy('client')" class="group inline-flex items-center">
                                     Klient
-                                    @if($sortField === 'client.id')
+                                    @if($sortField === 'client')
                                         <span class="ml-1">
                                             @if($sortDirection === 'asc')
                                                 ↑
@@ -110,15 +110,16 @@
                     </tr>
                 </thead>
                 <tbody class="border divide-y divide-gray-200 dark:divide-gray-700">
+                    
                     @forelse($devices as $device)
                         <tr class="border hover:bg-gray-100 dark:hover:bg-gray-600">
                             @if(auth()->check() && auth()->user()->can('devices.view_all'))
                                 <td class="px-4 py-4">
                                     <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                        {{ $device->user->first_name }} {{ $device->user->last_name }}
+                                        {{ $device->client->first_name }} {{ $device->client->last_name }}
                                     </div>
                                     <div class="text-sm text-gray-500 dark:text-gray-400">
-                                        {{ $device->user->email }}
+                                        {{ $device->client->email }}
                                     </div>
                                 </td>
                             @endif

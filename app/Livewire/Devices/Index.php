@@ -3,12 +3,14 @@
 namespace App\Livewire\Devices;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Device;
 use App\Models\User;
 use Masmerise\Toaster\Toaster;
 
 class Index extends Component
 {
+    use WithPagination;
     public string $search = '';
     public ?int $userFilter  = null;
     public string $sortField = 'id';
@@ -32,7 +34,7 @@ class Index extends Component
         $this->loadClients();
         $this->headers = [
             'id' => 'Id',
-            'client.id' => 'Klient',
+            'client' => 'Klient',
             'model' => 'Model',
             'serial_number' => 'Numer seryjny',
             'producent_number' => 'Numer producenta',
@@ -107,22 +109,29 @@ class Index extends Component
     public function render()
     {
         $devices = Device::query()
-            ->with('users')
+            ->with('client')
             ->when(!auth()->user()->can('devices.view_all') && auth()->user()->can('devices.view_own'), function($query){
                 $query->where('client_id', auth()->user()->id);
             })
             ->when($this->search, function($query){
                 $query->where(function($q){
-                    $q->where('users.first_name', 'like', '%'.$this->search.'%')
-                        ->orWhere('users.last_name', 'like', '%'.$this->search.'%')
-                        ->orWhere('devices.model', 'like', '%'.$this->search.'%')
-                        ->orWhere('devices.serial_number', 'like', '%'.$this->search.'%')
-                        ->orWhere('devices.producent_number', 'like', '%'.$this->search.'%');
+                    $q->whereHas('client', function($userQuery) {
+                        $userQuery->where('first_name', 'like', '%'.$this->search.'%')
+                            ->orWhere('last_name', 'like', '%'.$this->search.'%')
+                            ->orWhere('email', 'like', '%'.$this->search.'%');
+                    })
+                    ->orWhere('model', 'like', '%'.$this->search.'%')
+                    ->orWhere('serial_number', 'like', '%'.$this->search.'%')
+                    ->orWhere('producent_number', 'like', '%'.$this->search.'%');
                 });
             })
-            ->orderBy($this->sortField, $this->sortDirection)
+            ->when($this->sortField === 'client', function ($query) {
+                $query->join('users', 'users.id', '=', 'devices.client_id')
+                    ->orderBy('users.id', $this->sortDirection);
+            }, function ($query) {
+                $query->orderBy($this->sortField, $this->sortDirection);
+            })
             ->paginate($this->perPage);
-
 
         return view('livewire.devices.index', compact('devices'));
     }
