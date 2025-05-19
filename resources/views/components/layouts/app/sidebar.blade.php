@@ -14,7 +14,9 @@
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Menu')" class="grid">
                     <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Strona główna') }}</flux:navlist.item>
-                    <flux:navlist.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.index')" wire:navigate>{{ __('Użytkownicy') }}</flux:navlist.item>
+                    @canany(['users.view','users.create','clients.view','clients.create'])
+                        <flux:navlist.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.index')" wire:navigate>{{ __('Użytkownicy') }}</flux:navlist.item>
+                    @endcanany
                     <flux:navlist.item icon="clipboard-document-list" :href="route('devices.index')" :current="request()->routeIs('devices.index')" wire:navigate>{{ __('Urządzenia') }}</flux:navlist.item>
                     <flux:navlist.item icon="wrench" :href="route('services.index')" :current="request()->routeIs('services.index')" wire:navigate>{{ __('Serwisy') }}</flux:navlist.item>
                 </flux:navlist.group>

@@ -101,9 +101,11 @@
                     <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                     {{ __('Dashboard') }}
                     </flux:navlist.item>
-                    <flux:navlist.item icon="layout-grid" :href="route('users.index')" :current="request()->routeIs('users.index')" wire:navigate>
-                    {{ __('Użytkownicy') }}
-                    </flux:navlist.item>
+                    @canany(['users.view','users.create','clients.view','clients.create'])
+                        <flux:navlist.item icon="layout-grid" :href="route('users.index')" :current="request()->routeIs('users.index')" wire:navigate>
+                        {{ __('Użytkownicy') }}
+                        </flux:navlist.item>
+                    @endcanany
                 </flux:navlist.group>
             </flux:navlist>
 
